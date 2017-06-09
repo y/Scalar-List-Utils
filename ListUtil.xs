@@ -1044,39 +1044,29 @@ void
 pick(num, ...)
     int num;
 PROTOTYPE: $@
+ALIAS:
+    sample = 1
 CODE:
 {
+    int index;
     my_init_rand();
 
-    if ( num <= 0 || items <= 1 ) {
+    items--;
+    if (num <= 0 || items < 1) {
         XSRETURN_EMPTY;
     }
-
-    if ( num > items - 1 ) {
-        num = items - 1;
+    if (num > items) {
+        num = items;
     }
 
-    int found[num];
-    int i = 0;
-    while ( i < num ) {
-        bool redo = false;
-        int index = (int)(Drand01() * (double)(items-1));
-        for ( int x = 0; x < i; x++ ) {
-            if ( found[x] == index ) {
-                redo = true;
-                break;
-            }
-        }
-        if ( redo == true ) {
-            continue;
-        }
-
-        ST(i) = ST(index+1);
-        found[i] = index;
-        i++;
+    for (index = 1 ; index <= num ; index++) {
+        int swap = index + (int)(Drand01() * (double)(items - index));
+        SV *tmp = ST(swap);
+        ST(swap) = ST(index);
+        ST(index-1) = tmp;
     }
 
-    XSRETURN(i);
+    XSRETURN(num);
 }
 
 void
